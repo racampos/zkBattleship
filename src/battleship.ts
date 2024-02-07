@@ -1,33 +1,60 @@
-import { Field, ZkProgram, verify, Gadgets, Bool } from 'o1js';
+import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js';
 
 const toBin = (str: string) => {
   return str.replace(/██/g, '1').replace(/ {2}/g, '0');
 }
 
-const Battleship = ZkProgram({
-  name: "battleship",
-  publicInput: Field, // target
+class TargetAndBoardCommitment extends Struct({ target: Field, boardCommitment: Field}) {
+  constructor(value: { target: Field, boardCommitment: Field }) {
+    super(value);
+  }
+}
+
+const HitOrMiss = ZkProgram({
+  name: "hitOrMiss",
+  publicInput: TargetAndBoardCommitment, // target and board commitment
   publicOutput: Bool,
 
   methods: {
-    hitOrMiss: {
+    run: {
       privateInputs: [Field], // board
 
-      method(publicInput: Field, board: Field): Bool {
+      method(publicInput: TargetAndBoardCommitment, board: Field): Bool {
+        // Validate that the board commitment matches the board
+        publicInput.boardCommitment.assertEquals(Poseidon.hash([board]), "board must match the previously commited board");
         // Validate that target is not 0
-        publicInput.assertNotEquals(Field(0), "target must not be 0");
+        publicInput.target.assertNotEquals(Field(0), "target must not be 0");
         // Validate that target contains a single 1
-        Gadgets.and(publicInput, publicInput.sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
+        Gadgets.and(publicInput.target, publicInput.target.sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
 
         // Determine if the target is a hit or miss
-        const result = Gadgets.and(board, publicInput, 254);
+        const result = Gadgets.and(board, publicInput.target, 254);
         return result.equals(Field(0)).not();
       },
     },
   }
 });
 
-const { verificationKey } = await Battleship.compile();
+const ValidateBoard = ZkProgram({
+  name: "validateBoard",
+  publicOutput: Field,
+
+  methods: {
+    run: {
+      privateInputs: [Field], // board
+
+      method(board: Field): Field {
+        // Validate that the board is valid
+        //...
+
+        // If the board is valid, return a hash of the boardm
+        return Poseidon.hash([board]);
+      },
+    },
+  }
+});
+
+const { verificationKey } = await HitOrMiss.compile();
 
 const begin = performance.now();
 console.log("starting proof generation");
@@ -57,9 +84,11 @@ const targetStr = ( '                    ' +
                     '                    ' );
 
 const targetBin = BigInt('0b' + toBin(targetStr));
-const target = Field.from(targetBin);
+const targetField = Field.from(targetBin);
 
-const hitOrMiss = await Battleship.hitOrMiss(target, board);
+const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: Poseidon.hash([board]) });
+
+const hitOrMiss = await HitOrMiss.run(target, board);
 const end = performance.now();
 console.log("proof generation took: ", end - begin, " ms");
 
