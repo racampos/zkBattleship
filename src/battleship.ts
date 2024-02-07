@@ -4,8 +4,8 @@ const toBin = (str: string) => {
   return str.replace(/██/g, '1').replace(/ {2}/g, '0');
 }
 
-const Battleships = ZkProgram({
-  name: "battleships",
+const Battleship = ZkProgram({
+  name: "battleship",
   publicInput: Field, // target
   publicOutput: Bool,
 
@@ -18,15 +18,16 @@ const Battleships = ZkProgram({
         publicInput.assertNotEquals(Field(0), "target must not be 0");
         // Validate that target contains a single 1
         Gadgets.and(publicInput, publicInput.sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
+
         // Determine if the target is a hit or miss
         const result = Gadgets.and(board, publicInput, 254);
         return result.equals(Field(0)).not();
       },
-    }
+    },
   }
 });
 
-const { verificationKey } = await Battleships.compile();
+const { verificationKey } = await Battleship.compile();
 
 const begin = performance.now();
 console.log("starting proof generation");
@@ -58,7 +59,7 @@ const targetStr = ( '                    ' +
 const targetBin = BigInt('0b' + toBin(targetStr));
 const target = Field.from(targetBin);
 
-const hitOrMiss = await Battleships.hitOrMiss(target, board);
+const hitOrMiss = await Battleship.hitOrMiss(target, board);
 const end = performance.now();
 console.log("proof generation took: ", end - begin, " ms");
 
