@@ -1,25 +1,14 @@
 import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js';
+import { Carrier } from './ships.js';
+import { Board } from './board.js';
+import { Position } from './utils.js';
 
 const toBin = (str: string) => {
   return str.replace(/██/g, '1').replace(/ {2}/g, '0');
 }
 
-class Board extends Struct({ slots: Field }) {
-  constructor(value: { slots: Field }) {
-    super(value);
-  }
-
-  isOccupied(target: Field): Bool {
-    return Gadgets.and(this.slots, target, 254).equals(Field(0)).not()
-  }
-
-  getHash(): Field {
-    return Poseidon.hash([this.slots]);
-  }
-}
-
-class TargetAndBoardCommitment extends Struct({ target: Field, boardCommitment: Field}) {
-  constructor(value: { target: Field, boardCommitment: Field }) {
+class TargetAndBoardCommitment extends Struct({ target: Position, boardCommitment: Field}) {
+  constructor(value: { target: Position, boardCommitment: Field }) {
     super(value);
   }
 }
@@ -37,9 +26,9 @@ const HitOrMiss = ZkProgram({
         // Validate that the board commitment matches the board
         publicInput.boardCommitment.assertEquals(board.getHash(), "board must match the previously commited board");
         // Validate that target is not 0
-        publicInput.target.assertNotEquals(Field(0), "target must not be 0");
+        publicInput.target.getField().assertNotEquals(Field(0), "target must not be 0");
         // Validate that target contains a single 1
-        Gadgets.and(publicInput.target, publicInput.target.sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
+        Gadgets.and(publicInput.target.getField(), publicInput.target.getField().sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
 
         // Determine if the target is a hit or miss
         // const result = Gadgets.and(board, publicInput.target, 254);
@@ -73,19 +62,25 @@ const { verificationKey } = await HitOrMiss.compile();
 
 const begin = performance.now();
 console.log("starting proof generation");
-const boardStr = ( '                    ' +
-                   '    ██              ' + 
-                   '    ██            ██' +
-                   '    ██      ██    ██' +
-                   '    ██      ██    ██' +
-                   '    ██      ██      ' +
-                   '            ██      ' +
-                   '      ██            ' +
-                   '      ██      ██    ' +
-                   '      ██      ██    ' );
 
-const boardBin = BigInt('0b' + toBin(boardStr));
-const board = new Board( {slots: Field.from(boardBin) });
+//    _0__1__2__3__4__5__6__7__8__9__
+// 0 |                ██ ██ ██ ██   | 0
+// 1 |       ██                     | 1
+// 2 |       ██                ██   | 2
+// 3 |       ██                ██   | 3
+// 4 |       ██                ██   | 4
+// 5 |       ██                     | 5
+// 6 |                              | 6
+// 7 |       ██ ██ ██               | 7
+// 8 |                      ██      | 8
+// 9 |______________________██______| 9
+//    _0__1__2__3__4__5__6__7__8__9__
+
+
+const carrier = new Carrier({ end: new Position({ x: Field(2), y: Field(5) }), direction: Field(1) });
+
+
+const board = new Board( { carrier: carrier });
 
 const targetStr = ( '                    ' +
                     '                    ' + 
@@ -99,7 +94,8 @@ const targetStr = ( '                    ' +
                     '                    ' );
 
 const targetBin = BigInt('0b' + toBin(targetStr));
-const targetField = Field.from(targetBin);
+// const targetField = new Position({ x: Field(8), y: Field(5) });
+const targetField = new Position({ x: Field(2), y: Field(5) });
 
 const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: board.getHash() });
 
