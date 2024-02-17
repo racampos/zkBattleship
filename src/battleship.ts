@@ -1,5 +1,5 @@
 import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js';
-import { Carrier } from './ships.js';
+import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
 
@@ -60,7 +60,6 @@ const ValidateBoard = ZkProgram({
 
 const { verificationKey } = await HitOrMiss.compile();
 
-const begin = performance.now();
 console.log("starting proof generation");
 
 //    _0__1__2__3__4__5__6__7__8__9__
@@ -78,27 +77,20 @@ console.log("starting proof generation");
 
 
 const carrier = new Carrier({ end: new Position({ x: Field(2), y: Field(5) }), direction: Field(1) });
+const battleship = new Battleship({ end: new Position({ x: Field(8), y: Field(0) }), direction: Field(0) });
+const cruiser = new Cruiser({ end: new Position({ x: Field(4), y: Field(7) }), direction: Field(0) });
+const submarine = new Submarine({ end: new Position({ x: Field(8), y: Field(4) }), direction: Field(1) });
+const destroyer = new Destroyer({ end: new Position({ x: Field(7), y: Field(9) }), direction: Field(1) });
 
 
-const board = new Board( { carrier: carrier });
+const board = new Board( { carrier: carrier, battleship: battleship, cruiser: cruiser, submarine: submarine, destroyer: destroyer});
 
-const targetStr = ( '                    ' +
-                    '                    ' + 
-                    '                    ' +
-                    '                    ' +
-                    '                    ' +
-                    '                ██  ' +
-                    '                    ' +
-                    '                    ' +
-                    '                    ' +
-                    '                    ' );
-
-const targetBin = BigInt('0b' + toBin(targetStr));
-// const targetField = new Position({ x: Field(8), y: Field(5) });
-const targetField = new Position({ x: Field(2), y: Field(5) });
+const targetField = new Position({ x: Field(8), y: Field(4) });
+// const targetField = new Position({ x: Field(2), y: Field(5) });
 
 const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: board.getHash() });
 
+const begin = performance.now();
 const hitOrMiss = await HitOrMiss.run(target, board);
 const end = performance.now();
 console.log("proof generation took: ", end - begin, " ms");

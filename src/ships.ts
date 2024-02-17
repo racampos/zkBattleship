@@ -27,3 +27,35 @@ export class Carrier extends Ship {
     super({ end: value.end, direction: value.direction, horPattern: hp, verPattern: vp });
   }
 }
+
+export class Battleship extends Ship {
+  constructor(value: { end: Position, direction: Field }) {
+    const hp = Field(0b1111);
+    const vp = Field(0b1000000000010000000000100000000001);
+    super({ end: value.end, direction: value.direction, horPattern: hp, verPattern: vp });
+  }
+}
+
+export class Cruiser extends Ship {
+  constructor(value: { end: Position, direction: Field }) {
+    const hp = Field(0b111);
+    const vp = Field(0b10000000000100000000001);
+    super({ end: value.end, direction: value.direction, horPattern: hp, verPattern: vp });
+  }
+}
+
+export class Submarine extends Ship {
+  constructor(value: { end: Position, direction: Field }) {
+    const hp = Field(0b111);
+    const vp = Field(0b10000000000100000000001);
+    super({ end: value.end, direction: value.direction, horPattern: hp, verPattern: vp });
+  }
+}
+
+export class Destroyer extends Ship {
+  constructor(value: { end: Position, direction: Field }) {
+    const hp = Field(0b11);
+    const vp = Field(0b100000000001);
+    super({ end: value.end, direction: value.direction, horPattern: hp, verPattern: vp });
+  }
+}

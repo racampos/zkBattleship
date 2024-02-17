@@ -1,19 +1,27 @@
 import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct, Provable } from 'o1js';
-import { Carrier } from './ships.js';
+import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Position } from './utils.js';
 
 
 export class Board extends Struct({ 
-  carrier: Carrier
+  carrier: Carrier,
+  battleship: Battleship,
+  cruiser: Cruiser,
+  submarine: Submarine,
+  destroyer: Destroyer
  }) {
   constructor(value: { 
-    carrier: Carrier
+    carrier: Carrier,
+    battleship: Battleship,
+    cruiser: Cruiser,
+    submarine: Submarine,
+    destroyer: Destroyer
   }) {
     super(value);
   }
 
   getSlots(): Field {
-    return this.carrier.getSlots();
+    return this.carrier.getSlots().add(this.battleship.getSlots()).add(this.cruiser.getSlots()).add(this.submarine.getSlots()).add(this.destroyer.getSlots());
   }
 
   isOccupied(target: Position): Bool {
