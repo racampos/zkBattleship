@@ -2,9 +2,12 @@ import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js'
 import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
-import { HitOrMiss, TargetAndBoardCommitment } from './zkprograms.js';
+import { HitOrMiss, TargetAndBoardCommitment, ValidateBoard } from './zkprograms.js';
 
-const { verificationKey } = await HitOrMiss.compile();
+let { verificationKey } = await HitOrMiss.compile();
+const hitOrMissVerKey = verificationKey;
+({ verificationKey } = await ValidateBoard.compile());
+const validateBoardVerKey = verificationKey;
 
 // Sample board with one ship of each type
 //
@@ -28,18 +31,24 @@ const battleship = new Battleship({ end: new Position({ x: Field(8), y: Field(0)
 const cruiser = new Cruiser({ end: new Position({ x: Field(4), y: Field(7) }), direction: Field(0) });
 const submarine = new Submarine({ end: new Position({ x: Field(8), y: Field(4) }), direction: Field(1) });
 const destroyer = new Destroyer({ end: new Position({ x: Field(7), y: Field(9) }), direction: Field(1) });
+// Instantiate the board and add the ships
 const board = new Board();
 board.addCarrier(carrier);
-console.log('board :', board.getSlots().toBigInt().toString(2));
-console.log('ship  :', battleship.getSlots().toBigInt().toString(2));
 board.addBattleship(battleship);
 board.addCruiser(cruiser);
 board.addSubmarine(submarine);
 board.addDestroyer(destroyer);
 
-// Each player generates a commitment to their board
-// and sends it to the other player
-const boardCommitment = board.getHash();
+// Each player validates its board and generates a commitment to their board
+// Then they send the commitment to the other player
+console.log("starting proof generation");
+let begin = performance.now();
+const validBoard = await ValidateBoard.run(carrier, battleship, cruiser, submarine, destroyer);
+let end = performance.now();
+console.log("proof generation took: ", end - begin, " ms");
+
+// the other player verifies the board proof
+let ok = await verify(validBoard, validateBoardVerKey);
 
 // For each turn, one player is the attacker and the other is the defender
 // The attacker selects a target and sends it to the defender
@@ -49,18 +58,18 @@ const targetField = new Position({ x: Field(8), y: Field(4) });
 // then feeds the target and their own board commitment to the HitOrMiss zkProgram
 
 // The public input is a struct with two fields: the target from the attacker and the defender's boardCommitment
-const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: boardCommitment });
+const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: validBoard.publicOutput });
 
 // The defender generates a proof that the target is either a hit or miss
 // and sends the proof to the attacker
 console.log("starting proof generation");
-const begin = performance.now();
+begin = performance.now();
 const hitOrMiss = await HitOrMiss.run(target, board);
-const end = performance.now();
+end = performance.now();
 console.log("proof generation took: ", end - begin, " ms");
 
 // The attacker verifies the proof and learns if the target was a hit or miss
-const ok = await verify(hitOrMiss, verificationKey);
+ok = await verify(hitOrMiss, hitOrMissVerKey);
 
 // Output the result
 if (hitOrMiss.publicOutput.toBoolean()) {

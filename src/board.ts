@@ -21,6 +21,9 @@ export class Board extends Struct({
   }
 
   addCarrier(carrier: Carrier) {
+    // make sure that the carrier is not out of bounds
+    carrier.validate();
+
     // make sure that the carrier is not already added
     this.carrier.isNull().assertTrue("carrier already added");
 
@@ -34,6 +37,9 @@ export class Board extends Struct({
   }
 
   addBattleship(battleship: Battleship) {
+    // make sure that the battleship is not out of bounds
+    battleship.validate();
+
     // make sure that the battleship is not already added
     this.battleship.isNull().assertTrue("battleship already added");
 
@@ -47,6 +53,9 @@ export class Board extends Struct({
   }
 
   addCruiser(cruiser: Cruiser) {
+    // make sure that the cruiser is not out of bounds
+    cruiser.validate();
+
     // make sure that the cruiser is not already added
     this.cruiser.isNull().assertTrue("cruiser already added");
 
@@ -60,6 +69,9 @@ export class Board extends Struct({
   }
 
   addSubmarine(submarine: Submarine) {
+    // make sure that the submarine is not out of bounds
+    submarine.validate();
+
     // make sure that the submarine is not already added
     this.submarine.isNull().assertTrue("submarine already added");
 
@@ -73,6 +85,9 @@ export class Board extends Struct({
   }
 
   addDestroyer(destroyer: Destroyer) {
+    // make sure that the destroyer is not out of bounds
+    destroyer.validate();
+
     // make sure that the destroyer is not already added
     this.destroyer.isNull().assertTrue("destroyer already added");
 

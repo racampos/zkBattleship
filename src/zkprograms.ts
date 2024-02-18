@@ -37,15 +37,25 @@ export const HitOrMiss = ZkProgram({
 
 export const ValidateBoard = ZkProgram({
   name: "validateBoard",
-  publicOutput: Field,
+  publicOutput: Field, // hash of the validated board
 
   methods: {
     run: {
-      privateInputs: [Board],
+      privateInputs: [Carrier, Battleship, Cruiser, Submarine, Destroyer],
 
-      method(board: Board): Field {
-        // Check that 
-
+      method(
+        carrier: Carrier,
+        battleship: Battleship,
+        cruiser: Cruiser,
+        submarine: Submarine,
+        destroyer: Destroyer
+      ): Field {
+        const board = new Board();
+        board.addCarrier(carrier);
+        board.addBattleship(battleship);
+        board.addCruiser(cruiser);
+        board.addSubmarine(submarine);
+        board.addDestroyer(destroyer);
         // If the board is valid, return a hash of the board
         return board.getHash();
       },
