@@ -108,6 +108,16 @@ export class Board extends Struct({
     return Gadgets.and(this.getSlots(), target.getField(), 254).equals(Field(0)).not()
   }
 
+  // Validates that none of the ships is null
+  validateNoNullShips() {
+    this.carrier.isNull()
+    .or(this.battleship.isNull())
+    .or(this.cruiser.isNull())
+    .or(this.submarine.isNull())
+    .or(this.destroyer.isNull())
+    .assertFalse("at least one ship is null");
+  }
+
   getHash(): Field {
     return Poseidon.hash([this.getSlots()]);
   }

@@ -56,7 +56,8 @@ export const ValidateBoard = ZkProgram({
         board.addCruiser(cruiser);
         board.addSubmarine(submarine);
         board.addDestroyer(destroyer);
-        // If the board is valid, return a hash of the board
+        board.validateNoNullShips();
+        // If everything is valid, return the hash of the board
         return board.getHash();
       },
     },
