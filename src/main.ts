@@ -26,11 +26,11 @@ const validateBoardVerKey = verificationKey;
 
 // Create a board with ships in it
 // This is done by each player in secret
-const carrier = new Carrier({ end: new Position({ x: Field(2), y: Field(5) }), direction: Field(1) });
-const battleship = new Battleship({ end: new Position({ x: Field(8), y: Field(0) }), direction: Field(0) });
-const cruiser = new Cruiser({ end: new Position({ x: Field(4), y: Field(7) }), direction: Field(0) });
-const submarine = new Submarine({ end: new Position({ x: Field(8), y: Field(4) }), direction: Field(1) });
-const destroyer = new Destroyer({ end: new Position({ x: Field(7), y: Field(9) }), direction: Field(1) });
+const carrier = new Carrier({ start: new Position({ x: Field(2), y: Field(1) }), direction: Field(1) });
+const battleship = new Battleship({ start: new Position({ x: Field(5), y: Field(0) }), direction: Field(0) });
+const cruiser = new Cruiser({ start: new Position({ x: Field(2), y: Field(7) }), direction: Field(0) });
+const submarine = new Submarine({ start: new Position({ x: Field(8), y: Field(2) }), direction: Field(1) });
+const destroyer = new Destroyer({ start: new Position({ x: Field(7), y: Field(8) }), direction: Field(1) });
 // Instantiate the board and add the ships
 const board = new Board();
 board.addCarrier(carrier);

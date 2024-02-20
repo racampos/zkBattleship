@@ -4,6 +4,22 @@ export class Position extends Struct({ x: Field, y: Field }) {
   constructor(value: { x: Field, y: Field }) {
     super(value);
   }
+
+  add(jump: Field, direction: Field): Position {
+    return new Position({
+      x: Provable.if(
+        direction.equals(Field(0)),
+        this.x.add(jump).sub(Field(1)),
+        this.x
+      ),
+      y: Provable.if(
+        direction.equals(Field(1)),
+        this.y.add(jump).sub(Field(1)),
+        this.y
+      )
+    });
+  }
+
   getField(): Field {
     const yMul = Provable.switch([
       this.y.equals(Field(0)),
