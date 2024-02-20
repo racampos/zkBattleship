@@ -1,4 +1,4 @@
-import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js';
+import { Field, ZkProgram, Bool, Struct } from 'o1js';
 import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
@@ -21,14 +21,10 @@ export const HitOrMiss = ZkProgram({
       method(publicInput: TargetAndBoardCommitment, board: Board): Bool {
         // Validate that the board commitment matches the board
         publicInput.boardCommitment.assertEquals(board.getHash(), "board must match the previously commited board");
-        // Validate that target is not 0
-        publicInput.target.getField().assertNotEquals(Field(0), "target must not be 0");
-        // Validate that target contains a single 1
-        Gadgets.and(publicInput.target.getField(), publicInput.target.getField().sub(1), 254).assertEquals(Field(0), "target must contain a single 1");
-
-        // Determine if the target is a hit or miss
-        // const result = Gadgets.and(board, publicInput.target, 254);
-        // return result.equals(Field(0)).not();
+        // Validate that target is valid
+        publicInput.target.x.assertLessThanOrEqual(Field(9), "target x must be less than or equal to 9");
+        publicInput.target.y.assertLessThanOrEqual(Field(9), "target y must be less than or equal to 9");
+        // Return true if the target is occupied by a ship, false otherwise
         return board.isOccupied(publicInput.target);
       },
     },

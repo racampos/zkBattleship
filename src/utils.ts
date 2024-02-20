@@ -1,4 +1,4 @@
-import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct, Provable } from 'o1js';
+import { Field, Struct, Provable } from 'o1js';
 
 export class Position extends Struct({ x: Field, y: Field }) {
   constructor(value: { x: Field, y: Field }) {

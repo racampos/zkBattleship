@@ -1,4 +1,4 @@
-import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct, Provable } from 'o1js';
+import { Field, Gadgets, Bool, Poseidon, Struct } from 'o1js';
 import { Ship, Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Position } from './utils.js';
 

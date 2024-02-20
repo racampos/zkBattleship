@@ -1,4 +1,4 @@
-import { Field, ZkProgram, verify, Gadgets, Bool, Poseidon, Struct } from 'o1js';
+import { Field, verify } from 'o1js';
 import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
@@ -52,13 +52,13 @@ let ok = await verify(validBoard, validateBoardVerKey);
 
 // For each turn, one player is the attacker and the other is the defender
 // The attacker selects a target and sends it to the defender
-const targetField = new Position({ x: Field(8), y: Field(4) });
+const targetPosition = new Position({ x: Field(8), y: Field(4) });
 
 // The defender receives the target from the attacker
 // then feeds the target and their own board commitment to the HitOrMiss zkProgram
 
 // The public input is a struct with two fields: the target from the attacker and the defender's boardCommitment
-const target = new TargetAndBoardCommitment({ target: targetField, boardCommitment: validBoard.publicOutput });
+const target = new TargetAndBoardCommitment({ target: targetPosition, boardCommitment: validBoard.publicOutput });
 
 // The defender generates a proof that the target is either a hit or miss
 // and sends the proof to the attacker
