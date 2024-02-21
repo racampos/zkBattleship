@@ -2,7 +2,7 @@ import { Field, verify } from 'o1js';
 import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
-import { HitOrMiss, TargetAndBoardCommitment, ValidateBoard } from './zkprograms.js';
+import { HitOrMiss, PublicInput, ValidateBoard } from './zkprograms.js';
 
 let { verificationKey } = await HitOrMiss.compile();
 const hitOrMissVerKey = verificationKey;

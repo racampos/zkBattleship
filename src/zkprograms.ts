@@ -1,26 +1,28 @@
-import { Field, ZkProgram, Bool, Struct } from 'o1js';
+import { Field, ZkProgram, Bool, Struct, Gadgets } from 'o1js';
 import { Carrier, Battleship, Cruiser, Submarine, Destroyer } from './ships.js';
 import { Board } from './board.js';
 import { Position } from './utils.js';
 
-export class TargetAndBoardCommitment extends Struct({ target: Position, boardCommitment: Field}) {
-  constructor(value: { target: Position, boardCommitment: Field }) {
+export class PublicInput extends Struct({ target: Position, previousHits: Field, boardCommitment: Field}) {
+  constructor(value: { target: Position, previousHits: Field, boardCommitment: Field }) {
     super(value);
   }
 }
 
 export const HitOrMiss = ZkProgram({
   name: "hitOrMiss",
-  publicInput: TargetAndBoardCommitment, // target and board commitment
+  publicInput: PublicInput, // current target, previous hits and board commitment
   publicOutput: Bool,
 
   methods: {
     run: {
       privateInputs: [Board],
 
-      method(publicInput: TargetAndBoardCommitment, board: Board): Bool {
+      method(publicInput: PublicInput, board: Board): Bool {
         // Validate that the board commitment matches the board
         publicInput.boardCommitment.assertEquals(board.getHash(), "board must match the previously commited board");
+        // Validate that the target does not match any previous hits
+        Gadgets.and(publicInput.previousHits, publicInput.target.getField(), 100).assertEquals(Field(0), "target must not match any previous hits");
         // Validate that target is valid
         publicInput.target.x.assertLessThanOrEqual(Field(9), "target x must be less than or equal to 9");
         publicInput.target.y.assertLessThanOrEqual(Field(9), "target y must be less than or equal to 9");
